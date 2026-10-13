@@ -175,6 +175,20 @@ async def test_status_projection_is_json_serialisable(
         await asyncio.gather(task, return_exceptions=True)
 
 
+async def test_announce_publishes_no_state_before_the_lamp_is_read(
+    lamp_config: LampConfig,
+) -> None:
+    """A lamp that has not answered yet must not be reported as "OFF"."""
+    mqtt = StubMqtt()
+    supervisor = make_supervisor(lamp_config, FakeLamp(lamp_config.mac), mqtt)
+
+    supervisor.announce()
+
+    assert mqtt.last_payload(f"{lamp_config.base_topic}/state") is None
+    assert mqtt.last_payload(f"{lamp_config.base_topic}/availability") == "offline"
+    assert mqtt.last_payload(f"homeassistant/light/dyson_ble_{lamp_config.serial}/config")
+
+
 async def test_single_instance_lock_is_exclusive(tmp_path) -> None:
     path = tmp_path / "bridge.lock"
     first = bridge_module.acquire_single_instance_lock(path)

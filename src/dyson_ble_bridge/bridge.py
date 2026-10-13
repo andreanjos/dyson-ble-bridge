@@ -114,14 +114,15 @@ class LampSupervisor:
         self.mqtt.publish(topic, body, qos=1, retain=retain)
 
     def announce(self) -> None:
-        """(Re)publish discovery, availability and state — idempotent."""
+        """(Re)publish discovery and availability — idempotent."""
         for topic, payload in (ha.light_discovery(self.cfg), ha.motion_discovery(self.cfg)):
             self.publish(topic, payload)
-        self.publish(
-            f"{self.cfg.base_topic}/availability",
-            "online" if self.link.is_connected else "offline",
-        )
-        self._publish_state()
+        connected = self.link.is_connected
+        self.publish(f"{self.cfg.base_topic}/availability", "online" if connected else "offline")
+        if connected:
+            # Only publish a state the lamp itself reported: an invented "OFF"
+            # would show up in Home Assistant for a lamp that is actually on.
+            self._publish_state()
 
     def _publish_state(self) -> None:
         self.publish(f"{self.cfg.base_topic}/state", self.link.state.payload())
