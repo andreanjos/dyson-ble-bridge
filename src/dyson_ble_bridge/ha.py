@@ -28,6 +28,9 @@ class LampState:
 
         ``color_mode`` is mandatory for HA to accept colour temperature, and
         brightness is expressed on the lumen scale declared by ``brightness_scale``.
+        Colour temperature travels under the ``color_temp`` key: HA keeps that key
+        name and only switches its unit, which discovery pins to kelvin with
+        ``color_temp_kelvin: true``.
         """
         payload: dict[str, object] = {"state": "ON" if self.on else "OFF"}
         if not self.on:
@@ -36,7 +39,7 @@ class LampState:
         if self.lumens is not None:
             payload["brightness"] = self.lumens
         if self.kelvin is not None:
-            payload["color_temp_kelvin"] = self.kelvin
+            payload["color_temp"] = self.kelvin
         return payload
 
 
@@ -62,7 +65,9 @@ def parse_command(raw: str | bytes) -> Command:
 
     ``brightness`` is taken as the lumen value directly: discovery declares
     ``brightness_scale`` equal to :data:`~.protocol.LUMENS_MAX`, so HA's 0-255 user
-    range arrives already scaled to 0-1000.
+    range arrives already scaled to 0-1000. HA sends colour temperature as
+    ``color_temp`` in kelvin (``color_temp_kelvin: true`` in discovery);
+    ``color_temp_kelvin`` is accepted as well for hand-written payloads.
     """
     try:
         data = json.loads(raw)
@@ -86,13 +91,14 @@ def parse_command(raw: str | bytes) -> Command:
             raise CommandError(f"brightness must be a number, got {data['brightness']!r}") from err
 
     kelvin: int | None = None
-    if data.get("color_temp_kelvin") is not None:
+    for key in ("color_temp", "color_temp_kelvin"):
+        if data.get(key) is None:
+            continue
         try:
-            kelvin = clamp_kelvin(int(data["color_temp_kelvin"]))
+            kelvin = clamp_kelvin(int(data[key]))
         except (TypeError, ValueError) as err:
-            raise CommandError(
-                f"color_temp_kelvin must be a number, got {data['color_temp_kelvin']!r}"
-            ) from err
+            raise CommandError(f"{key} must be a number, got {data[key]!r}") from err
+        break
 
     return Command(on=on, lumens=lumens, kelvin=kelvin)
 

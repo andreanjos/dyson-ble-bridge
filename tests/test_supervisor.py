@@ -96,7 +96,7 @@ async def test_supervisor_publishes_state_changes(
             "state": "ON",
             "color_mode": "color_temp",
             "brightness": 900,
-            "color_temp_kelvin": 2700,
+            "color_temp": 2700,
         }
     finally:
         task.cancel()
