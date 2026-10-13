@@ -1,4 +1,4 @@
-# Agent brief: the three Dyson lamps
+# Agent brief: the four Dyson lamps
 
 Facts and gotchas for an agent that already manages this Home Assistant. Everything below exists
 today; nothing here needs setup.
@@ -17,6 +17,7 @@ The owner is renaming the entities, so match on the **device**, not on the curre
 | Dyson Downstairs | `light.dyson_downstairs_dyson_downstairs` | `binary_sensor.dyson_downstairs_dyson_downstairs_motion` |
 | Dyson Conservatory 1 | `light.dyson_conservatory_1_dyson_conservatory_1` | `binary_sensor.dyson_conservatory_1_dyson_conservatory_1_motion` |
 | Dyson Conservatory 2 | `light.dyson_conservatory_2_dyson_conservatory_2` | `binary_sensor.dyson_conservatory_2_dyson_conservatory_2_motion` |
+| Dyson Study | `light.dyson_study` | `binary_sensor.dyson_study_motion` |
 
 ## What they can do
 
@@ -40,7 +41,7 @@ The owner is renaming the entities, so match on the **device**, not on the curre
 5. An entity becomes `unavailable` when its lamp's BLE link drops (out of range) or the bridge
    restarts (30–60 s to reconnect). Guard triggers with `not_from: ["unavailable", "unknown"]` and
    avoid "turn off when unavailable" logic.
-6. Only three lamps exist; a fourth lamp is not integrated — do not reference it.
+6. Four lamps are integrated; these are all of them. Do not reference any other Dyson light.
 
 ## Example: motion-lit conservatory after dark, off ten minutes after the room empties
 
