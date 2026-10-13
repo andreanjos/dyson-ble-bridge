@@ -85,6 +85,23 @@ The bridge publishes MQTT discovery for each lamp (`homeassistant/light/dyson_bl
 Availability is published per lamp **and** bridge-wide, so a dead bridge marks the entities
 unavailable rather than leaving stale state.
 
+### Wire contract with Home Assistant
+
+Discovery is `schema: json`, `brightness: true`, `brightness_scale: 1000`,
+`color_temp_kelvin: true`, `supported_color_modes: [color_temp]`. Three details of that schema
+matter, because getting any of them wrong fails quietly:
+
+* HA *keeps the `color_temp` key name* and switches only its unit — with `color_temp_kelvin: true`
+  it reads and writes kelvin under `color_temp`, never under `color_temp_kelvin`. State and
+  commands both use `color_temp`.
+* `brightness_scale: 1000` makes HA scale its 0–255 UI range to the lumen range the lamp uses,
+  so the bridge passes `brightness` through as lumens.
+* Without `color_mode` in the state payload HA never exposes colour temperature at all, and a
+  `color_temp` value that arrives while the mode says `brightness` is dropped.
+
+Send `{"state": "OFF"}` (no attributes) when the lamp is off; HA keeps the last brightness and
+colour until the lamp reports them again.
+
 ## Monitoring
 
 `GET http://<host>:8765/status` returns per-lamp connection state, counters and the last error:

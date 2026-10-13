@@ -13,7 +13,7 @@ COPY run.sh /run.sh
 RUN chmod +x /run.sh
 
 LABEL \
-  io.hass.version="0.1.1" \
+  io.hass.version="0.1.2" \
   io.hass.type="addon" \
   io.hass.arch="aarch64|amd64|armv7|armhf" \
   org.opencontainers.image.source="https://github.com/andreanjos/dyson-ble-bridge" \

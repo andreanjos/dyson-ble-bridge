@@ -215,7 +215,15 @@ class LampLink:
             await transport.disconnect()
 
     def _link_dropped(self) -> None:
-        """Transport disconnect callback — must be synchronous (bleak calls it directly)."""
+        """Transport disconnect callback — must be synchronous (bleak calls it directly).
+
+        BlueZ reports a dropped link more than once (a notification error and the
+        disconnect property both arrive), so the loss is signalled exactly once per
+        connect attempt: otherwise the supervisor republishes availability and logs
+        the loss for every late callback of one dead link.
+        """
+        if self.link_lost:
+            return
         self.link_lost = True
         if self._on_link_lost is not None:
             self._on_link_lost()

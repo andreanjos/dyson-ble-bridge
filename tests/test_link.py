@@ -117,6 +117,10 @@ async def test_motion_and_link_loss_callbacks(lamp_config: LampConfig, fake_lamp
     fake_lamp.drop_link()
     assert losses == [True]
     assert link.link_lost and not link.is_connected
+    # BlueZ reports one dead link several times (the disconnect and late
+    # notification errors): the supervisor must hear about it exactly once.
+    fake_lamp.drop_link()
+    assert losses == [True]
 
 
 async def test_refresh_tolerates_a_failing_characteristic(
