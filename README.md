@@ -31,6 +31,7 @@ Everything below was validated against real lamps (firmware `5.17`, product code
 | Framing | 20-byte fragments, first header `0x80 | (total-1)`, later `index & 0x7F`; pace writes ~60 ms |
 | Control | power `2dd11005` (1 byte), brightness `2dd11009` (uint16 LE lumens), colour `2dd11001` (uint16 LE K) — all with **write-without-response** |
 | Daylight mode | the lamp ignores manual brightness/colour writes while its daylight algorithm runs, so the bridge writes `13 20 01 00 00` to `2dd10021` first |
+| Write coalescing | a colour-temperature write that shares a burst with a brightness write is dropped (brightness applied, colour left at the old value), so the two value writes are spaced 200 ms apart |
 | CCCD | some stacks accept `start_notify` but leave the descriptor at `0000`; the bridge writes `0x0001` when the stack lets it |
 
 ## Install
