@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time
 from collections.abc import Callable
 
 import pytest
@@ -31,6 +32,10 @@ class FakeLamp:
     channel, HKDF-derived envelope, nonce echo, and read-back of written values.
     """
 
+    # The hardware drops a colour-temperature write that arrives in the same burst
+    # as a brightness write, so the fake lamp does too: pacing must be tested.
+    COALESCE_WINDOW = 0.1
+
     def __init__(
         self,
         mac: str,
@@ -45,6 +50,8 @@ class FakeLamp:
         self.fail_connects = fail_connects
         self.is_connected = False
         self.writes: list[tuple[str, bytes]] = []
+        self.dropped_writes: list[tuple[str, bytes]] = []
+        self.brightness_write_at = 0.0
         self.reads: list[str] = []
         self.subscribed: dict[str, Callable[[str, bytes], None]] = {}
         self.cccd: set[str] = set()
@@ -85,7 +92,13 @@ class FakeLamp:
             self.power = payload
         elif char == protocol.CHAR_BRIGHTNESS_LUMENS:
             self.lumens = int.from_bytes(payload, "little")
+            self.brightness_write_at = time.monotonic()
         elif char == protocol.CHAR_COLOR_TEMP:
+            if time.monotonic() - self.brightness_write_at < self.COALESCE_WINDOW:
+                # The real lamp drops a colour write that shares a burst with a
+                # brightness write; the fake lamp does the same so pacing is tested.
+                self.dropped_writes.append((char, payload))
+                return
             self.kelvin = int.from_bytes(payload, "little")
 
     async def read(self, char: str) -> bytes:

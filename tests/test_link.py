@@ -45,6 +45,19 @@ async def test_connect_rejects_wrong_ltk(lamp_config: LampConfig) -> None:
         await link.connect()
 
 
+async def test_apply_spaces_brightness_and_colour_writes(
+    lamp_config: LampConfig, fake_lamp: FakeLamp
+) -> None:
+    """Both values must land: the lamp drops a colour write sent in the same burst."""
+    link = await connected_link(fake_lamp, lamp_config)
+    fake_lamp.dropped_writes.clear()
+
+    await link.apply(Command(on=True, lumens=700, kelvin=4200))
+
+    assert fake_lamp.dropped_writes == []
+    assert link.state == LampState(on=True, lumens=700, kelvin=4200)
+
+
 async def test_apply_leaves_daylight_mode_before_manual_writes(
     lamp_config: LampConfig, fake_lamp: FakeLamp
 ) -> None:

@@ -27,6 +27,10 @@ READ_TIMEOUT = 10.0
 FRAGMENT_PACING = 0.06  # the lamp drops back-to-back fragments
 DAYLIGHT_SETTLE = 0.25
 WRITE_SETTLE = 0.6
+# The lamp coalesces writes that arrive in one burst: a colour-temperature write
+# sent right after a brightness write is dropped (verified on fw 5.17), so the
+# two value writes are spaced apart.
+VALUE_PACING = 0.2
 
 _NOTIFY_CHARS: tuple[tuple[str, str], ...] = (
     (protocol.CHAR_POWER, "_on_power"),
@@ -313,6 +317,8 @@ class LampLink:
                 await transport.write(
                     protocol.CHAR_BRIGHTNESS_LUMENS, protocol.lumens_payload(command.lumens)
                 )
+                if command.kelvin is not None:
+                    await asyncio.sleep(VALUE_PACING)
             if command.kelvin is not None:
                 await transport.write(
                     protocol.CHAR_COLOR_TEMP, protocol.kelvin_payload(command.kelvin)

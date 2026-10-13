@@ -1,1 +1,1 @@
-dyson-ble-bridge @ https://github.com/andreanjos/dyson-ble-bridge/archive/refs/tags/v0.1.3.tar.gz
+dyson-ble-bridge @ https://github.com/andreanjos/dyson-ble-bridge/archive/refs/tags/v0.1.4.tar.gz
