@@ -1,0 +1,35 @@
+[Unit]
+Description=Dyson BLE lamps to Home Assistant MQTT bridge
+Documentation=https://github.com/andreanjos/dyson-ble-bridge
+After=network-online.target bluetooth.target
+Wants=network-online.target
+
+[Service]
+# Type=notify + WatchdogSec: a bridge whose event loop stops making progress is restarted
+Type=notify
+NotifyAccess=all
+WatchdogSec=60
+Restart=always
+RestartSec=10
+TimeoutStopSec=20
+
+# BlueZ's D-Bus policy grants access to root or members of the bluetooth group
+User=root
+WorkingDirectory=/home/rac/dyson-bridge
+Environment=DYSON_BRIDGE_CONFIG=/etc/dyson-ble-bridge/config.json
+Environment=DYSON_BRIDGE_LOCK=/run/dyson-ble-bridge/bridge.lock
+RuntimeDirectory=dyson-ble-bridge
+ExecStart=/usr/local/bin/dyson-ble-bridge --config /etc/dyson-ble-bridge/config.json
+
+# Hardening: the adapter is reached over D-Bus, so nothing else is needed
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=read-only
+ProtectSystem=strict
+ReadWritePaths=/run/dyson-ble-bridge
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_BLUETOOTH
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+[Install]
+WantedBy=multi-user.target

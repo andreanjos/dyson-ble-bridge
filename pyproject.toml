@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dyson-ble-bridge"
+version = "0.1.0"
+description = "Expose Dyson BLE lamps (Solarcycle/Lightcycle Morph) to Home Assistant over MQTT from any Linux host with a Bluetooth adapter."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Andre Anjos" }]
+keywords = ["dyson", "bluetooth", "ble", "home-assistant", "mqtt", "lightcycle", "solarcycle"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Home Automation",
+]
+dependencies = [
+  "bleak>=0.22",
+  "cryptography>=42",
+  "paho-mqtt>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.11",
+  "pytest>=8",
+  "pytest-asyncio>=0.23",
+  "ruff>=0.6",
+]
+
+[project.scripts]
+dyson-ble-bridge = "dyson_ble_bridge.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/andreanjos/dyson-ble-bridge"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dyson_ble_bridge"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["A", "B", "C4", "E", "F", "I", "N", "PL", "RET", "RUF", "SIM", "UP", "W"]
+ignore = ["PLR0911", "PLR0912", "PLR0913", "PLR2004"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN", "PLR2004", "S101"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+files = ["src"]

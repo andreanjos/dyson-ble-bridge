@@ -1,0 +1,29 @@
+name: Dyson BLE bridge
+version: "0.1.0"
+slug: dyson_ble_bridge
+description: Expose Dyson BLE lamps (Solarcycle/Lightcycle Morph) to Home Assistant over MQTT, using a Bluetooth adapter attached to the Home Assistant host.
+url: https://github.com/andreanjos/dyson-ble-bridge
+arch:
+  - aarch64
+  - amd64
+  - armv7
+  - armhf
+init: false
+startup: services
+boot: auto
+# BlueZ lives on the host bus; the add-on talks to it through D-Bus
+host_dbus: true
+services:
+  - mqtt
+options:
+  account_uuid: ""
+  status_port: 8765
+  lamps: []
+schema:
+  account_uuid: str
+  status_port: port
+  lamps:
+    - serial: str
+      mac: str
+      name: str
+      ltk: str
